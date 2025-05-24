@@ -194,10 +194,6 @@ if __name__ == "__main__":
             log_file, exit_code=3
         )
 
-    if tweak_n and mode != "no_hinge":
-        print("Tweaking only works in no_hinge mode; run with '--mode no_hinge'.")
-        sys.exit()
-
     print_header_gb(tag)
 
     # Copy the input files and analysis scripts to the results folder
@@ -211,6 +207,8 @@ if __name__ == "__main__":
     output_genbank = f"out/{tag}/{tag}_designed_seqs.gb"
 
     copy_analysis_assets(gb_file_path, yml_file_path, tag, script_paths)
+
+    validate_gene_count(i, index_primers)
 
     with open(f"out/{tag}/log.txt", "a") as log_file:
 
@@ -591,6 +589,12 @@ if __name__ == "__main__":
                 call_tweaker_2(f"out/{tag}/log.txt", tweak_n)
 
             read_log_and_identify_failures(tag)
+
+            # check to see if the user is using Subrmanian primers and if so update the
+            # required primers file that iggypop wirtes to the out directory
+            required_fasta = f"{ofile}_index_primers_required.fasta"
+            rewrite_required_primers(required_fasta, prefix="subra")
+
 
             if quiet=="off":
                 nerd_alert()
