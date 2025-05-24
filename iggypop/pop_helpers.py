@@ -924,3 +924,85 @@ def collate_genbank_reports(reports_dir, out_path):
                 # clear description
                 rec.description = ""
                 SeqIO.write(rec, out_handle, "genbank")
+
+def validate_gene_count(input_path, primers_file):
+    """
+    Count the number of input records (FASTA or GenBank) and ensure it does not exceed
+    the number of primer pairs in the index set CSV.
+    """
+    ext = os.path.splitext(input_path)[1].lower()
+    try:
+        with open(input_path, "r") as fh:
+            if ext in (".gb", ".gbk"):
+                num_records = sum(1 for line in fh if line.startswith("LOCUS"))
+            else:
+                num_records = sum(1 for line in fh if line.startswith(">"))
+    except Exception as e:
+        sys.exit(f"Error reading input file {input_path}: {e}")
+
+    try:
+        df_primers = pd.read_csv(primers_file)
+    except Exception as e:
+        sys.exit(f"Error reading primer index file {primers_file}: {e}")
+    num_pairs = df_primers.shape[0]
+
+    if num_records > num_pairs:
+        sys.exit(
+            f"Error: {num_records} input records in {input_path} but "
+            f"only {num_pairs} primer pairs in {primers_file}.\n"
+            "Please supply an index_primers file with at least as many entries."
+        )
+
+
+def rewrite_required_primers(required_fasta, prefix="subra"):
+    """
+    Collapse combinatorial entries in a FASTA of required primers
+    down to unique primer IDs (e.g. subra_01, subra_25, …) and
+    overwrite the original file with one record per ID.
+    """
+    # read in all records
+    names, seqs = [], []
+    with open(required_fasta) as fh:
+        cur_name = None
+        cur_seq = []
+        for line in fh:
+            line = line.rstrip()
+            if line.startswith(">"):
+                if cur_name is not None:
+                    names.append(cur_name)
+                    seqs.append("".join(cur_seq))
+                cur_name = line[1:].split()[0]
+                cur_seq = []
+            else:
+                cur_seq.append(line)
+        if cur_name is not None:
+            names.append(cur_name)
+            seqs.append("".join(cur_seq))
+
+    # map each index to its sequence based on F/R suffix
+    id2seq = {}
+    pat = re.compile(rf"^{prefix}_(\d+)_(\d+)_(F|R)$")
+    for nm, seq in zip(names, seqs):
+        m = pat.match(nm)
+        if not m:
+            continue
+        first, second, direction = int(m.group(1)), int(m.group(2)), m.group(3)
+        if direction == "F":
+            id2seq[first] = seq
+        else:  # direction == "R"
+            id2seq[second] = seq
+
+    if not id2seq:
+        print("Warning: no combinatorial primers found; file left unchanged.")
+        return
+
+    # overwrite with one record per unique index, sorted
+    with open(required_fasta, "w") as fh:
+        for idx in sorted(id2seq):
+            fh.write(f">{prefix}_{idx:02d}\n")
+            fh.write(f"{id2seq[idx]}\n")
+
+    print("Notice: repeated indexing primers detected;")
+    print(f"Overwrote {required_fasta} with unique `{prefix}` primers.")
+
+
