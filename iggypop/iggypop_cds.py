@@ -214,7 +214,10 @@ if __name__ == "__main__":
             )
 
         # Read input sequences
+        validate_gene_count(i, index_primers)
         sequences = read_fasta(i)
+
+
         if not sequences:
             log_and_exit(
                 "No sequences found in the input file.", log_file, exit_code=4
@@ -704,6 +707,12 @@ if __name__ == "__main__":
         except Exception as e:
             log_and_print(f"Failed to collate GenBank reports: {e}", log_file)
         # ───────────────────────────────────────────────────────────────────────
+
+
+        # check to see if the user is using Subrmanian primers and if so update the
+        # required primers file that iggypop wirtes to the out directory
+        required_fasta = f"{ofile}_index_primers_required.fasta"
+        rewrite_required_primers(required_fasta, prefix="subra")
 
         log_and_print("\nDone", log_file)
 
