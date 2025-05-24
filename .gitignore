@@ -77,6 +77,8 @@ yaml/*
 !yaml/chisel_only.yml
 !yaml/chisel_only_gc_boost.yml
 !yaml/promoters.yml
+!yaml/domesticate_cds_subramanian_primers_576.yml
+!yaml/domesticate_cds_subramanian_primers_2304.yml
 
 data/hingesets_04_27_25.xlsx
 
