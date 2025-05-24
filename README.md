@@ -96,6 +96,7 @@ To codon optimize coding sequences with an *E. coli* codon table, use BsaI sites
     --oligo_length 300
 ```
 
+
 #### MoClo compatibility:
 Iggypop's defaults are oriented toward developing reusable MoClo/Goldenbraid compatible genetic parts. The default `iggypop.py cds` settings create sequences with 5'-BsaI-AATG and GCTT-BsaI-3' ends. 
 
@@ -179,6 +180,17 @@ The default dataset used to predict ligation fidelity is taken from Potapov et a
 ```bash
 ./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs_BsmBI_data.fasta"  \
 				--fidelity_data "data/BsmBI-HFv2_T4.xlsx"
+```
+
+#### Using Subramanian primers instead of indexsets:
+This yaml uses the a 24 x 24 combinatorial set of Subramanian primers to allow for indexing 576 targets (see doi: 10.1093/synbio/ysx008). We have not experimentally tested these with our pipeline.
+```bash
+./iggypop.py cds                                               \
+    --i "test/35_TFs.fasta" --o "35_TFs_subra"                 \
+    --yml "yaml/domesticate_cds_subramanian_primers_576.yml" 
+
+## you can also use this yaml for more targets or make your own sets
+#   --yml "yaml/domesticate_cds_subramanian_primers_2304.yml" 
 ```
 
 #### Reproducible runs
