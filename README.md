@@ -185,8 +185,8 @@ The default dataset used to predict ligation fidelity is taken from Potapov et a
 #### Using Subramanian primers instead of indexsets:
 This yaml uses the a 24 x 24 combinatorial set of Subramanian primers to allow for indexing 576 targets (see doi: 10.1093/synbio/ysx008). We have not experimentally tested these with our pipeline.
 ```bash
-./iggypop.py cds                                               \
-    --i "test/35_TFs.fasta" --o "35_TFs_subra"                 \
+./iggypop.py cds                                                 \
+    --i "test/35_At_cds.fasta" --o "35_At_cds_subra"             \
     --yml "yaml/domesticate_cds_subramanian_primers_576.yml" 
 
 ## you can also use this yaml for more targets or make your own sets
