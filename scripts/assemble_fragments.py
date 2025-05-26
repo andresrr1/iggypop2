@@ -284,6 +284,8 @@ def main():
     step1_groups = len(two_step_keys)
     final_twostep = sum(1 for k in final_dict if k.startswith("STEP2:"))
     
+
+    print()
     print("\n--- Assembly Statistics ---")
     print(f"Total assembled genes (final): {total_final}")
     print(f"Average assembled sequence length: {avg_final_length:.2f} bp")
@@ -295,6 +297,9 @@ def main():
     print("\n--- Two-step Assembly Stats ---")
     print(f"Step 1 two-step groups: {step1_groups}")
     print(f"Step 2 assembled two-step genes: {final_twostep}")
-
+    print("\n--- If you see mismatched ends, make sure `n` is set properly ---")
+    print("--- `--n 27` for Subramanian w/ 1-step and `--n 28` 2-step.   ---")
+    print()
+    
 if __name__ == "__main__":
     main()

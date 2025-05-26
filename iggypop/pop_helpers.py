@@ -992,17 +992,9 @@ def rewrite_required_primers(required_fasta, prefix="subra"):
         else:  # direction == "R"
             id2seq[second] = seq
 
-    if not id2seq:
-        print("Warning: no combinatorial primers found; file left unchanged.")
-        return
-
     # overwrite with one record per unique index, sorted
     with open(required_fasta, "w") as fh:
         for idx in sorted(id2seq):
             fh.write(f">{prefix}_{idx:02d}\n")
             fh.write(f"{id2seq[idx]}\n")
-
-    print("Notice: repeated indexing primers detected;")
-    print(f"Overwrote {required_fasta} with unique `{prefix}` primers.")
-
 
