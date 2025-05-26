@@ -53,24 +53,27 @@ The default settings (`yaml/domesticate_cds.yml`):
 
 #### Sequence optimization using `dnachisel` functions:
 ```bash
+
+./iggypop.py cds                          \
+--i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
+--species "o_sativa"                      \
+--yml "yaml/domesticate_cds_mcu.yml"
+
 # This yaml removes common IIS sites, codon optimizes using `match_codon_usage`
 # and an rice codon table, remove hairpins, and reduces repeated sequences 
 # ≥12 bp using `UniquifyAllKmers` optimization:
-./iggypop.py cds                          \
---i "test/10_TFs.fasta" --o "10_TFs_mcu"  \
---yml "yaml/domesticate_cds_mcu.yml"      \
---species o_sativa
+
 ```
 
 #### GC-boosting
-This example used `dnachisel`functions to design assembly oligos for domesticated and GC-boosted versions of input coding sequences with the parameters used to design STARBURST in Dvir *et al.* 2025.
+The yaml in the example uses `dnachisel` to domesticate and GC-boost input coding sequences similarly to that used in Dvir *et al.* 2025. .
 ```bash
 ./iggypop.py cds --i "test/edibles.fasta" --o "high_gc_edibles"  \
 				 --yml "yaml/domesticate_cds_mcu_gc_53.yml"                     
 ```
 
 #### Overriding defaults:
-The default parameters can be modified by creating new YAML files or using arguments on the command line.  For example, to modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3', which are required as terminal overhangs with the pPOP vectors:
+To modify from the command line so that the only additions to the sequence are 5'-AATG and GCTT-3', which are required as terminal overhangs with the pPOP vectors:
 ```bash
 ./iggypop.py cds                                        \
     --i "test/10_TFs.fasta" --o "10_TFs_not_moclo"      \
@@ -80,9 +83,9 @@ The default parameters can be modified by creating new YAML files or using argum
 #### Changing cloning overhangs
 You can change the external overhangs for cloning; all three parameters below need to be updated.
 ```bash
-./iggypop.py cds --i "test/RUBY.fasta"          \
-    --base_5p_end AAAA    --base_3p_end GCCG    \
-    --ext_overhangs AAAA GCCG
+./iggypop.py cds --i "test/RUBY.fasta"              \
+    --base_5p_end "AAAA"    --base_3p_end "GCCG"    \
+    --ext_overhangs "AAAA" "GCCG"
 ```
 
 
@@ -106,7 +109,7 @@ You can adjust the `base_5p_end` and `base_3p_end` parameters to modify this beh
 If you want to make minimal changes to your input sequence, use the minimal yaml; it removes the IIS site used for cloning into pPOP-BsmBI, appends the required cloning overhangs (AATG/GCTT) but makes no other changes:
 ```bash
 ./iggypop.py cds --i "test/10_TFs.fasta" --o "10_TFs"    \
-                 --yml yaml/domesticate_cds_minimal.yml
+                 --yml "yaml/domesticate_cds_minimal.yml"
 ```
 
 
@@ -115,7 +118,7 @@ If you want to make minimal changes to your input sequence, use the minimal yaml
 ```bash
 ./iggypop.py cds                                                     \
     --i "test/10_At_promoters.fasta" --o "10_At_promoters"           \
-    --yml yaml/promoters.yml
+    --yml "yaml/promoters.yml"
 ```
 
 For complex constructs containing coding and non-coding sequences, use `iggypop.py gb` and an annotated GenBank file (see below).
@@ -138,15 +141,17 @@ Note: The two-step assembly YAMLs add BbsI sites (instead of BsmBI) to the oligo
 Use "--primer_index" to specify the starting row of the indexset file for new runs.
 ```bash
 ./iggypop.py cds --i "test/edibles.fasta" --o "edibles"
-./iggypop.py cds --i "test/juiceables.fasta" --o "juiceables" --primer_index 11
-```
 
-Then combine files into one fasta file to create an oligo pool file for ordering:
-```bash
+# First file has 10 genes in it, so we start the next run at 11
+./iggypop.py cds --i "test/juiceables.fasta" --o "juiceables" --primer_index 11
+
+# combine them for ordering:
 cat out/juiceables/juiceables_oligo_pool.fasta \
     out/edibles/edibles_oligo_pool.fasta > out/oligo_order.fasta
+
 ```
 
+#### Simulating assembly-- sanity check before ordering
 You can use `assemble_fragments.py` to simulate golden gate assembly and confirm that none of your index primers are used on more than one gene and output the assembled sequences to a fasta file:
 ```bash
 python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
@@ -156,7 +161,6 @@ python scripts/assemble_fragments.py --i "out/oligo_order.fasta"          \
 
 #### Generating oligos without modifications to input sequences
 `--mode no_mods` will run the hinging process (i.e. identify high-fidelity overhang sets) and output indexed oligo for input sequences without making any changes to your input sequences.
-
 
 #### Sequence optimization only
 `--mode no_hinge` will output only dnachisel'd sequences. This example domesticates a set of input sequences using `dnachisel`. This is a convenient way to access `dnachisel`'s large set of sequence optimization parameters through a yaml. 
@@ -189,8 +193,17 @@ This yaml uses the a 24 x 24 combinatorial set of Subramanian primers to allow f
     --i "test/35_At_cds.fasta" --o "35_At_cds_subra"             \
     --yml "yaml/domesticate_cds_subramanian_primers_576.yml" 
 
-## you can also use this yaml for more targets or make your own sets
-#   --yml "yaml/domesticate_cds_subramanian_primers_2304.yml" 
+# for larger runs:
+# --yml "yaml/domesticate_cds_subramanian_primers_2304.yml" 
+# or make your own sets & yaml
+# ***Make sure you update `primer_length` to 20 if you make a new yaml***
+
+# Alternately overide default settings instead of making a new yaml
+./iggypop.py cds                                                 \
+    --i "test/35_At_cds.fasta" --o "35_At_cds_subra_alt"         \
+    --index_primers "data/subramanian_primers_24_by_24.csv"      \
+	--primer_length 20  #Subramanian primers are 20 bp
+
 ```
 
 #### Reproducible runs
