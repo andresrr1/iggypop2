@@ -63,6 +63,14 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
+# Compile properly
+RUN apt-get update && apt-get install -y \
+      build-essential \
+      gfortran \
+      python3-dev \
+      libatlas-base-dev \
+      && rm -rf /var/lib/apt/lists/*
+
 # Update pip, setuptools, and wheel to the latest versions and install Python dependencies
 RUN pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt
