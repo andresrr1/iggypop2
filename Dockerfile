@@ -53,6 +53,9 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 
 # Add Conda to PATH so that all subsequent RUN commands have access to it
 ENV PATH=/opt/conda/bin:$PATH
+    
+# Pin the python version
+RUN conda install -y python=3.9 && conda clean -afy
 
 # Set the working directory in the container
 WORKDIR /app
